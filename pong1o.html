@@ -11,65 +11,72 @@
             x,y, //pozice
             vx,vy; //rychlost
         let hrac1x,hrac1y,hrac2x,hrac2y,hrac1body,hrac2body;
+        let mic = {};
+        let hrac1 = {};
+        let hrac2 = {};
         let background = new Image();
         background.src = "https://vignette.wikia.nocookie.net/tayothelittlebus/images/9/97/Bob_minions_2015.png/revision/latest?cb=20150807182137";
         function inicializujHru() {
-            hrac1body=0;
-            hrac2body=0;
-            stavHry();
             cnv = document.getElementById("platno");
             ctx = cnv.getContext("2d");
             ctx.clearRect(0, 0, cnv.width, cnv.height);
-            x = cnv.width / 2;
-            y = cnv.height / 2;
-            vx = 4;
-            vy = -2;
-            //inicializace hracu
-            hrac1x = 10;
-            hrac1y = cnv.height / 2;
-            hrac2x = cnv.width - 10;
-            hrac2y = cnv.height / 2;
 
+            //inicializace mice
+            mic.x = cnv.width / 2;
+            mic.y = cnv.height / 2;
+            mic.vx = 4;
+            mic.vy = -2;
 
+            //inicializace hrac #1
+            hrac1.x = 10;
+            hrac1.y = cnv.height / 2;
+            hrac1.dolu=false;
+            hrac1.nahoru=false;
+            hrac1.body = 0;
+
+            //inicializace hrac #2
+            hrac2.x = cnv.width - 10;
+            hrac2.y = cnv.height / 2;
+            hrac2.dolu=false;
+            hrac2.nahoru=false;
+            hrac2.body = 0;
+
+            stavHry();
         }
-        function nakresliHrace(hracx, hracy) {
+        function nakresliHrace(hrac) {
             ctx.beginPath();
             ctx.lineWidth = 10;
             ctx.strokeStyle = "blue";
-            ctx.moveTo(hracx,hracy-VYSKA_HRACE);
-            ctx.lineTo(hracx,hracy+VYSKA_HRACE);
+            ctx.moveTo(hrac.x,hrac.y-VYSKA_HRACE);
+            ctx.lineTo(hrac.x,hrac.y+VYSKA_HRACE);
             ctx.stroke();
         }
-        let hrac1dolu=false;
-        let hrac1nahoru=false;
-        let hrac2dolu=false;
-        let hrac2nahoru=false;
         function klavesaDolu(event) {
             if (event.key == "q") {
-                hrac1nahoru=true;
+                hrac1.nahoru=true;
             }
             if (event.key == "a") {
-                hrac1dolu=true;
+                hrac1.dolu=true;
             }
             if (event.key == "p") { //"ArrowUp"
-                hrac2nahoru=true;
+                hrac2.nahoru=true;
             }
             if (event.key == "l") { //"ArrowDown"
-                hrac2dolu=true;
+                hrac2.dolu=true;
             }
         }
         function klavesaNahoru(event) {
             if (event.key == "q") {
-                hrac1nahoru=false;
+                hrac1.nahoru=false;
             }
             if (event.key == "a") {
-                hrac1dolu=false;
+                hrac1.dolu=false;
             }
             if (event.key == "p") { //"ArrowUp"
-                hrac2nahoru=false;
+                hrac2.nahoru=false;
             }
             if (event.key == "l") { //"ArrowDown"
-                hrac2dolu=false;
+                hrac2.dolu=false;
             }
         }
         function zaktualizujHru() {
@@ -81,71 +88,72 @@
             ctx.globalAlpha = 1.0; //ostatní věci vykreslovat neprůhledné
 
             //posun mice v obou osach
-            x = x + vx;
-            y = y + vy;
+            mic.x = mic.x + mic.vx;
+            mic.y = mic.y + mic.vy;
 
             //odrazeni od hrace 1
-            if (x <= hrac1x+R && y > hrac1y-VYSKA_HRACE && y < hrac1y+VYSKA_HRACE ) {
-                vx = -1 * vx;
+            if (mic.x <= hrac1.x+R && mic.y > hrac1.y-VYSKA_HRACE && mic.y < hrac1.y+VYSKA_HRACE ) {
+                mic.vx = -1 * mic.vx;
             }
-            if (x <= R) {
+            if (mic.x <= R) {
                 //bod pro hrace 2, novy mic
-                hrac2body++; // ...hrac2body=hrac2body+1
+                hrac2.body++; // ...hrac2body=hrac2body+1
                 stavHry();
-                x = cnv.width / 2;
-                y = cnv.height / 2;
+                mic.x = cnv.width / 2;
+                mic.y = cnv.height / 2;
             }
 
             //odrazeni od hrace 2
-            if (x >= hrac2x-R && y > hrac2y-VYSKA_HRACE && y < hrac2y+VYSKA_HRACE ) {
-                vx = -1 * vx;
+            if (mic.x >= hrac2.x-R && mic.y > hrac2.y-VYSKA_HRACE && mic.y < hrac2.y+VYSKA_HRACE ) {
+                mic.vx = -1 * mic.vx;
             }
-            if (x >= cnv.width-R) {
+            if (mic.x >= cnv.width-R) {
                 //bod pro hrace 1, novy mic
-                hrac1body++;
+                hrac1.body++;
                 stavHry();
-                x = cnv.width / 2;
-                y = cnv.height / 2;
+                mic.x = cnv.width / 2;
+                mic.y = cnv.height / 2;
             }
 
             //odrazeni od vodorovnych stran
-            if (y <= R) {
-                vy = -1 * vy;
+            if (mic.y <= R) {
+                mic.vy = -1 * mic.vy;
             }
-            if (y >= cnv.height-R) {
-                vy = -1 * vy;
+            if (mic.y >= cnv.height-R) {
+                mic.vy = -1 * mic.vy;
             }
 
             //kresleni mice
             ctx.beginPath();
             ctx.lineWidth = 1;
             ctx.strokeStyle = "red";
-            ctx.arc(x,y, R, 0,2*Math.PI);
+            ctx.arc(mic.x,mic.y, R, 0,2*Math.PI);
             ctx.stroke();
             ctx.fillStyle = "red";
             ctx.fill();
 
             //posun a kresleni hrace 1
-            if (hrac1nahoru == true) {
-                hrac1y = hrac1y -4;
+            if (hrac1.nahoru == true) {
+                hrac1.y = hrac1.y -4;
             }
-            if (hrac1dolu == true) {
-                hrac1y = hrac1y +4;
+            if (hrac1.dolu == true) {
+                hrac1.y = hrac1.y +4;
             }
-            nakresliHrace(hrac1x, hrac1y);
+            nakresliHrace(hrac1);
+
             //posun a kresleni hrace 2
-            if (hrac2nahoru == true) {
-                hrac2y = hrac2y -4;
+            if (hrac2.nahoru == true) {
+                hrac2.y = hrac2.y -4;
             }
-            if (hrac2dolu == true) {
-                hrac2y = hrac2y +4;
+            if (hrac2.dolu == true) {
+                hrac2.y = hrac2.y +4;
             }
-            hrac2y = y; //automatické sledování míče
-            nakresliHrace(hrac2x, hrac2y);
+            hrac2.y = mic.y; //automatické sledování míče
+            nakresliHrace(hrac2);
         }
         function stavHry() {
             document.getElementById("stav").innerHTML =
-                hrac1body + " : " + hrac2body;
+                hrac1.body + " : " + hrac2.body;
         }
         function startHry() {
             inicializujHru();
