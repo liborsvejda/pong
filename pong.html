@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Pong</title>
+    <script>
+        const R = 10; //polomer
+        const VYSKA_HRACE = 25;
+        let cnv,ctx,
+            x,y, //pozice
+            vx,vy; //rychlost
+        let hrac1x,hrac1y,hrac2x,hrac2y,hrac1body,hrac2body;
+        function inicializujHru() {
+            hrac1body=0;
+            hrac2body=0;
+            stavHry();
+            cnv = document.getElementById("platno");
+            ctx = cnv.getContext("2d");
+            ctx.clearRect(0, 0, cnv.width, cnv.height);
+            x = cnv.width / 2;
+            y = cnv.height / 2;
+            vx = 4;
+            vy = -2;
+            //inicializace hracu
+            hrac1x = 10;
+            hrac1y = cnv.height / 2;
+            hrac2x = cnv.width - 10;
+            hrac2y = cnv.height / 2;
+        }
+        function nakresliHrace(hracx, hracy) {
+            ctx.beginPath();
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "blue";
+            ctx.moveTo(hracx,hracy-VYSKA_HRACE);
+            ctx.lineTo(hracx,hracy+VYSKA_HRACE);
+            ctx.stroke();
+        }
+        let hrac1dolu=false;
+        let hrac1nahoru=false;
+        let hrac2dolu=false;
+        let hrac2nahoru=false;
+        function klavesaDolu(event) {
+            if (event.key == "q") {
+                hrac1nahoru=true;
+            }
+            if (event.key == "a") {
+                hrac1dolu=true;
+            }
+            if (event.key == "p") { //"ArrowUp"
+                hrac2nahoru=true;
+            }
+            if (event.key == "l") { //"ArrowDown"
+                hrac2dolu=true;
+            }
+        }
+        function klavesaNahoru(event) {
+            if (event.key == "q") {
+                hrac1nahoru=false;
+            }
+            if (event.key == "a") {
+                hrac1dolu=false;
+            }
+            if (event.key == "p") { //"ArrowUp"
+                hrac2nahoru=false;
+            }
+            if (event.key == "l") { //"ArrowDown"
+                hrac2dolu=false;
+            }
+        }
+        function zaktualizujHru() {
+            ctx.clearRect(0, 0, cnv.width, cnv.height);
+
+            //posun mice v obou osach
+            x = x + vx;
+            y = y + vy;
+
+            //odrazeni od hrace 1
+            if (x <= hrac1x+R && y > hrac1y-VYSKA_HRACE && y < hrac1y+VYSKA_HRACE ) {
+                vx = -1 * vx;
+            }
+            if (x <= R) {
+                //bod pro hrace 2, novy mic
+                hrac2body++; // ...hrac2body=hrac2body+1
+                stavHry();
+                x = cnv.width / 2;
+                y = cnv.height / 2;
+            }
+
+            //odrazeni od hrace 2
+            if (x >= hrac2x-R && y > hrac2y-VYSKA_HRACE && y < hrac2y+VYSKA_HRACE ) {
+                vx = -1 * vx;
+            }
+            if (x >= cnv.width-R) {
+                //bod pro hrace 1, novy mic
+                hrac1body++;
+                stavHry();
+                x = cnv.width / 2;
+                y = cnv.height / 2;
+            }
+
+            //odrazeni od vodorovnych stran
+            if (y <= R) {
+                vy = -1 * vy;
+            }
+            if (y >= cnv.height-R) {
+                vy = -1 * vy;
+            }
+
+            //kresleni mice
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "red";
+            ctx.arc(x,y, R, 0,2*Math.PI);
+            ctx.stroke();
+            ctx.fillStyle = "red";
+            ctx.fill();
+
+            //posun a kresleni hrace 1
+            if (hrac1nahoru == true) {
+                hrac1y = hrac1y -4;
+            }
+            if (hrac1dolu == true) {
+                hrac1y = hrac1y +4;
+            }
+            nakresliHrace(hrac1x, hrac1y);
+            //posun a kresleni hrace 2
+            if (hrac2nahoru == true) {
+                hrac2y = hrac2y -4;
+            }
+            if (hrac2dolu == true) {
+                hrac2y = hrac2y +4;
+            }
+            nakresliHrace(hrac2x, hrac2y);
+        }
+        function stavHry() {
+            document.getElementById("stav").innerHTML =
+                hrac1body + " : " + hrac2body;
+        }
+        function startHry() {
+            inicializujHru();
+            setInterval(zaktualizujHru, 25);
+        }
+        function konecHry() {
+
+        }
+    </script>
+</head>
+<body onload="startHry()" onkeydown="klavesaDolu(event)" onkeyup="klavesaNahoru(event)">
+
+<h1>Pong</h1>
+<h2 id="stav"></h2>
+Ovládání: hráč 1...<b>q</b>/<b>a</b>, hráč 2...<b>p</b>/<b>l</b><br>
+<canvas id="platno" width="400" height="300"
+        style="background-color: lightcyan"></canvas>
+
+</body>
+</html>
